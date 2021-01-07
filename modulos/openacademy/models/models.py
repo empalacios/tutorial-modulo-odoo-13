@@ -67,6 +67,11 @@ class Session(models.Model):
     active = fields.Boolean(default = True)
     end_date = fields.Date(string = 'End Date', store = True,
         compute = '_get_end_date', inverse = 'set_end_date')
+    attendees_count = fields.Integer(
+        string = 'Attendees count',
+        compute = '_get_attendees_count',
+        store = True
+    )
 
     @api.depends('seats', 'attendee_ids')
     def _taken_seats(self):
@@ -113,3 +118,8 @@ class Session(models.Model):
             if not (r.start_date and r.end_date):
                 continue
             r.duration = (r.end_date - r.start_date).days + 1
+
+    @api.depends('attendee_ids')
+    def _get_attendees_count(self):
+        for r in self:
+            r.attendees_count = len(r.attendee_ids)
